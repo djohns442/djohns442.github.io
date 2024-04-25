@@ -14,9 +14,12 @@ function App() {
 
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [contract, setContract] = useState(null);
+  const [contract, setContract] = useState("");
   const [account, setAccount] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [balance, setBalance] = useState("");
+
+
 
   const connectMetaMask = async () => {
     if (window.ethereum) { // Check if MetaMask is installed
@@ -26,11 +29,14 @@ function App() {
         await provider.send("eth_requestAccounts", [])
         const signer = provider.getSigner();
         const address = await signer.getAddress();
-        await setAccount(address)
+        await setAccount(address);
         console.log(`Connected to wallet: ${address}`);
         await setIsConnected(true);
         console.log(`isConnected: ${isConnected}`);
         console.log(contractAbi);
+        const balance = await provider.getBalance(address);
+        setBalance(ethers.utils.formatEther(balance));
+
         const contract = new ethers.Contract(contractAddress, contractAbi, signer);
         setContract(contract);
       } catch (error) {
@@ -40,12 +46,15 @@ function App() {
       alert('MetaMask is not installed. Please install it to use this feature.');
     }
   };
+
+
   return (
-    <div className="App">
+    <div className="App bg-light">
       {isConnected ?
         (<Connected
           account={account}
           contract={contract}
+          balance={balance}
         />)
         : (<Login connectWallet={connectMetaMask} />)}
     </div>
